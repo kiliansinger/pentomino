@@ -14,7 +14,7 @@
 
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
-	<meta name="apple-mobile-web-app-title" content="SIcalc" />
+	<meta name="apple-mobile-web-app-title" content="Sudoku" />
 	<link rel="apple-touch-icon" href="./images/icons/icon-152x152.png" />
 
 	<link rel="icon" type="image/png" href="./images/favicon.png" />
@@ -30,7 +30,7 @@
 	</noscript>
 
 	<script>
-        let serviceworkeractivate=false;
+        let serviceworkeractivate=true;
 		if (serviceworkeractivate && "serviceWorker" in navigator) {
 			window.addEventListener("load", () => {
 				navigator.serviceWorker.register("./service-worker.js").then((reg) => {
@@ -44,7 +44,7 @@
 		Hello my friend you can install the app in the top right corner. Press Start to generate a sudoku puzzle. Press solve to calculate a solution using Knuth's Algorithm X.
 		Sometimes there are more than one solutions then press solve multiple times to see them all.
 	</H5>
-	<button id="start">Start</button><button id="solve">Solve</button><br/>	
+	<button id="start">Start</button><button id="solve">Solve</button><button id="update">Update</button><br/>	
 	<table id="sudoku">
 	
 	</table>
