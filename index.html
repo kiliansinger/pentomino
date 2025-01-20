@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIcalc</title>
+    <link rel="stylesheet" href="style.css">
+    
+   
+	<link rel="manifest" href="./manifest.json" />
+	<meta name="description" content="Sudoku" />
+	<meta name="theme-color" content="#2F3BA2" />
+
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	<meta name="apple-mobile-web-app-title" content="SIcalc" />
+	<link rel="apple-touch-icon" href="./images/icons/icon-152x152.png" />
+
+	<link rel="icon" type="image/png" href="./images/favicon.png" />
+	
+	<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf-8">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-store">
+
+</head>
+<body> 
+    <noscript>
+		<div>Oops! Javascript required here! Allow it and try again!</div>
+	</noscript>
+
+	<script>
+        let serviceworkeractivate=false;
+		if (serviceworkeractivate && "serviceWorker" in navigator) {
+			window.addEventListener("load", () => {
+				navigator.serviceWorker.register("./service-worker.js").then((reg) => {
+					console.log("Service worker registered.", reg);
+				});
+			});
+		}
+	</script>
+<!-- erst an hier ändern-->
+    <H5 id="korrekt">
+		Hello my friend you can install the app in the top right corner. Press Start to generate a sudoku puzzle. Press solve to calculate a solution using Knuth's Algorithm X.
+		Sometimes there are more than one solutions then press solve multiple times to see them all.
+	</H5>
+	<button id="start">Start</button><button id="solve">Solve</button><br/>	
+	<table id="sudoku">
+	
+	</table>
+	<p id="info"></p>
+<!-- nur bis hier ändern-->
+    
+    <script src="app.js"></script>
+</body>
+</html>
