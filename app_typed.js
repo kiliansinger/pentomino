@@ -456,7 +456,7 @@ class DancingLinks {
         this.copyToTypedArray();
         let iter=0;
        // this._scrambleItems(); //check if order is not important
-        let x = new Int32Array(this.items.length).fill(0)
+        let x = new Int32Array(this_items_llink.length).fill(0)
         let sol = [];
         for (let l = 0, lmin=0, dir = 1, i, j, p;
             l >= lmin;
@@ -570,7 +570,7 @@ class DancingLinks {
     copyToTypedArray(){
         this_items_llink = new Int32Array(this.items.map(item => item.llink));
         this_items_rlink = new Int32Array(this.items.map(item => item.rlink));
-        this_items_name = new Array(this.items.map(item => item.name));
+        this_items_name = this.items.map(item => item.name);
         this_options_top = new Int32Array(this.options.map(option => option.top));
         this_options_ulink = new Int32Array(this.options.map(option => option.ulink));
         this_options_dlink = new Int32Array(this.options.map(option => option.dlink));
@@ -712,8 +712,8 @@ let parts=[
         [1,0,0,0,0]
     ],
     [//P
-        [1,1,1,0,0],
-        [1,1,1,0,0],
+        [1,1,0,0,0],
+        [1,1,0,0,0],
         [1,0,0,0,0],
         [0,0,0,0,0],
         [0,0,0,0,0]

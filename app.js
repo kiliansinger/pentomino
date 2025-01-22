@@ -490,7 +490,14 @@ function mousemove(e){
 
 canvas.addEventListener("mousemove",mousemove);
 canvas.addEventListener("touchmove",mousemove);
+/*6x10
+Execution time: 470748.69999999925 ms
+app.js:771 solutions: 9356
 
+with typed array
+Execution time: 333611.80000000075 ms
+app_typed.js:984 solutions: 9356
+*/
 let parts=[
     [//O
         [1,0,0,0,0],
@@ -500,8 +507,8 @@ let parts=[
         [1,0,0,0,0]
     ],
     [//P
-        [1,1,1,0,0],
-        [1,1,1,0,0],
+        [1,1,0,0,0],
+        [1,1,0,0,0],
         [1,0,0,0,0],
         [0,0,0,0,0],
         [0,0,0,0,0]
@@ -718,8 +725,8 @@ class PentominoSolver {
         return c.charCodeAt(0)-"O".charCodeAt(0);
     }
     generateItems() {
-        for (let n = 0; n < this.parts.length; ++n) {//Attention secondary items need to be added at the end also does not work with P only O
-            this.dl.pushItem(this.numToCode(n),false);//false makes trouble but true also
+        for (let n = 0; n < this.parts.length; ++n) {
+            this.dl.pushItem(this.numToCode(n),false);
         }
         for (let y = 0; y < num; ++y) {
             for (let x = 0; x < num; ++x) {
