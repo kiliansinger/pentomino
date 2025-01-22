@@ -36,3 +36,7 @@ input {
     outline: none;
     border:none;
 }
+canvas{
+    width: 90vmin;
+    height: 90vmin;
+}

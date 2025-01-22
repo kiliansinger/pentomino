@@ -1,3 +1,6 @@
+//https://medium.com/@techsuneel99/speed-up-javascript-array-processing-1f878158f4f1
+//https://ecostack.dev/posts/wasm-tinygo-vs-rust-vs-assemblyscript/
+//https://www.c-sharpcorner.com/article/arraybuffer-vs-typed-array-in-javascript-understanding-the-differences-and-usag/
 function Sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
@@ -14,111 +17,6 @@ function update(){
 document.getElementById("start").onclick = start;
 document.getElementById("solve").onclick = solve;
 document.getElementById("update").onclick = update;
-
-function generateNumber(zeilenarray) {
-    let ziffernarray = [];
-    for (let i = 0; i < 9; i++) {
-        if (zeilenarray[i]) {
-            ziffernarray.push(i + 1);
-        }
-    }
-    return ziffernarray
-}
-
-function wuerfle(ziffernarray) {
-    let index = Math.floor(Math.random() * ziffernarray.length);
-    return ziffernarray[index];
-}
-function killNumbers(zeilenarray2, field, zeile, spalte) {
-    let zeilenarray = zeilenarray2.slice();
-    for (let i = 0; i < zeile; i++) {//checke lines above
-        if (field[i][spalte] !== undefined) {
-            zeilenarray[field[i][spalte] - 1] = false;
-        }
-    }
-
-    let zeilediv3 = Math.floor(zeile / 3);
-    let spaltendiv3 = Math.floor(spalte / 3);
-    for (let i = zeilediv3 * 3; i <= zeilediv3 * 3 + 2; i++) {
-        for (let j = spaltendiv3 * 3; j <= spaltendiv3 * 3 + 2; j++) {
-            if (field[i][j] !== undefined) {
-                zeilenarray[field[i][j] - 1] = false;
-            }
-        }
-    }
-    return zeilenarray;
-}
-var field;
-async function start() {
-    document.getElementById("info").innerHTML = "";
-    let docresult = document.getElementById("sudoku");
-    docresult.innerHTML = "";
-    field = new Array(9);
-    for (let i = 0; i < 9; i++) {
-        field[i] = new Array(9);
-    }
-
-    for (let i = 0; i < 9; i++) {//zeilen
-        for (let j = 0; j < 9; j++) {
-            field[i][j] = undefined
-        }
-    }
-
-    let zeilenarray = [true, true, true, true, true, true, true, true, true];
-    let copyzeilenarray;
-    let ziffernarray = []
-
-    for (let i = 0; i < 9; i++) {
-        let valid = false;
-        while (!valid) {
-            copyzeilenarray = zeilenarray.slice();
-            for (let j = 0; j < 9; j++) {
-                let copyzeilenarraytemp = killNumbers(copyzeilenarray, field, i, j);
-                ziffernarray = generateNumber(copyzeilenarraytemp);
-                if (ziffernarray.length === 0) {
-                    i = Math.floor(i / 3) * 3;
-                    for (let i2 = i; i2 <= i + 2; i2++) {//zeilen
-                        for (let j = 0; j < 9; j++) {
-                            field[i2][j] = undefined
-                        }
-                    }
-                    valid = true;
-                    break;
-                }
-                field[i][j] = wuerfle(ziffernarray);
-                copyzeilenarray[field[i][j] - 1] = false;
-            }
-            if (valid) {//we step back and start again because we hit a dead end
-                i--;//because for loop will increase i
-                break;
-            }
-            valid = true;
-            for (let j = 0; j < 9; j++) {
-                if (field[i][j] === undefined) {
-                    valid = false;
-                    break;
-                }
-            }
-
-        }
-    }
-    for (let n = 0; n < 40; ++n) {
-        let i = Math.floor(Math.random() * 9);
-        let j = Math.floor(Math.random() * 9);
-        field[i][j] = undefined;
-    }
-    let html = "";
-    for (let i = 0; i < 9; i++) {
-        html += "<tr>";
-        for (let j = 0; j < 9; j++) {
-            let inputfield = "<input id='" + (j + 1) + "_" + (i + 1) + "' type='number' min='1' max='9'>"
-            html += "<td>" + (field[i][j] === undefined ? inputfield : field[i][j]) + "</td>";
-        }
-        html += "</tr>";
-
-    }
-    docresult.innerHTML = html;
-}
 
 class Item {
     constructor(name, llink, rlink) {
@@ -153,12 +51,16 @@ class DancingLinks {
             console.error("Item already exists");
             return false;
         }
-        this.itemMap.set(itemName, { "cnt": 0, "index": this.items.length });
-        let item = new Item(itemName, this.items.length - 1, 0);
+        this.itemMap.set(itemName, { "cnt": 0, "index": this.items.length,"primary":primary });
+        let item = new Item(itemName, this.lastprimaryitemnum, 0);
         if(primary){
             this.items[this.lastprimaryitemnum].rlink = this.items.length;
             this.items[0].llink = this.items.length;
             this.lastprimaryitemnum=this.items.length;
+        }
+        else{
+            item.llink=this.items.length;
+            item.rlink=this.items.length;
         }
         this.items.push(item);
         let option = this.options[this.options.length - 1];
@@ -340,7 +242,9 @@ class DancingLinks {
             this._swap(i,Math.floor(Math.random()*this.items.length),this.items.length);
         }
     }
-
+    debugsetup() {//algorithm X: D. Knuth The Art of Computer Programming, Vol 4b, p69, Addison-Wesley, 2011
+        this.finalizeOptions();
+    }
     solve() {//algorithm X: D. Knuth The Art of Computer Programming, Vol 4b, p69, Addison-Wesley, 2011
         this.finalizeOptions();
         let iter=0;
@@ -396,7 +300,31 @@ class DancingLinks {
         console.log("iter:"+iter);
         return sol;
     }
+    arraysAreEqual(arr1, arr2) {
+        if (arr1.length !== arr2.length) {
+            return false;
+        }
+        
+        for (let i = 0; i < arr1.length; i++) {
+            if (arr1[i] !== arr2[i]) {
+            return false;
+            }
+        }
+        
+        return true;
+    }
     setOption(optionArray, force = false) {
+        optionArray.sort();
+        var obj=this;
+        var isDuplicate = this.optionArrays.reduce(function (accumulator, el) {
+            //console.log(el, optionArray)
+            return accumulator ||  obj.arraysAreEqual(el, optionArray);
+          }, false);
+        
+        if (isDuplicate) {
+          //  console.error("Option already exists");
+            return false;
+        }
         optionArray.forEach((option) => {
             if (!this.itemMap.has(option)) {
                 console.error("Item " + option + " does not exist!");
@@ -413,7 +341,7 @@ class DancingLinks {
             if (force) this.itemMap.get(option).cnt--;
             else if (this.itemMap.get(option).cnt >= 0) this.itemMap.get(option).cnt++;
         });
-        if (force) this.optionArrays.unshift(optionArray.slice());
+        if (force) this.optionArrays.unshift(optionArray.slice());  //put it at the beginning
         else this.optionArrays.push(optionArray.slice())
         if (force) this.forcecnt++;
     }
@@ -436,11 +364,22 @@ class DancingLinks {
         this.currentoptionstart = 0;
         //sort items by cnt
         let arr = [...this.itemMap.entries()].sort((a, b) => a[1].cnt - b[1].cnt)
-        this.itemMap = new Map(arr.map((obj, index) => [obj[0], { "cnt": obj[1].cnt, "index": index + 1 }]));
+        this.itemMap = new Map(arr.map((obj, index) => [obj[0], { "cnt": obj[1].cnt, "index": index + 1 ,"primary":obj[1].primary}]));
         //
         this.options = this.options.slice(0, this.items.length + 1);
+        let lastprimary=0;
         this.itemMap.forEach((value, key) => {
             this.items[value.index].name = key;
+            if(value.primary){
+                this.items[value.index].llink = lastprimary;
+                this.items[value.index].rlink = 0;
+                this.items[0].llink = value.index;
+                this.items[lastprimary].rlink = value.index;
+                lastprimary=value.index;
+            }else{
+                this.items[value.index].llink = value.index;
+                this.items[value.index].rlink = value.index;
+            }
             this.options[value.index].top = Math.abs(value.cnt);
             this.options[value.index].ulink = value.index;
             this.options[value.index].dlink = value.index;
@@ -448,77 +387,390 @@ class DancingLinks {
     }
 };
 
-class SudokuSolver {
-    constructor() {
+///////////////////////////////////////////////
+// UI
+//////////////////////////////////////////////
+
+
+
+let canvas=document.getElementById("canvas");
+let ctx=canvas.getContext("2d");
+let drawing=false;
+let button;
+let black=true;
+
+document.getElementById("black").onclick = function(){black=true};
+document.getElementById("white").onclick = function(){black=false};
+
+(async ()=>{
+    document.getElementById("info").innerHTML = "";
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "white";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+})();
+let num=10;
+let blocksize=Math.floor(canvas.width/num);
+let field=Array.from(Array(num), () => new Array(num));
+
+function populateField(){
+    for(let x=0;x<num;x++){
+        for(let y=0;y<num;y++){
+            field[y][x]=(ctx.getImageData(x*blocksize+blocksize/2, y*blocksize+blocksize/2, 1, 1).data[0]!=255 && ctx.getImageData(x*blocksize+blocksize/2, y*blocksize+blocksize/2, 1, 1).data[1]!=255 && ctx.getImageData(x*blocksize+blocksize/2, y*blocksize+blocksize/2, 1, 1).data[2]!=255)?0:1;
+        }
+    }
+    console.log(field)
+}
+
+function start() {
+    populateField();
+    ss = new PentominoSolver(parts);
+    ss.dl.debugsetup()
+}
+
+
+function mousedown(e){
+    e.preventDefault();
+    var b = canvas.getBoundingClientRect();
+    var scale = canvas.width / parseFloat(b.width);
+    var x = Math.floor(((e.clientX - b.left) * scale)/blocksize)*blocksize;
+    var y = Math.floor(((e.clientY - b.top) * scale)/blocksize)*blocksize;
+    drawing=true;
+    if(button==-1) return;
+    button=e.button;
+    if(button===undefined){
+         button=-1;
+         x = Math.floor(((e.touches[0].clientX - b.left) * scale)/blocksize)*blocksize;
+         y = Math.floor(((e.touches[0].clientY - b.top) * scale)/blocksize)*blocksize;
+         if(black) ctx.fillStyle = "black"; 
+         else ctx.fillStyle = "white"; 
+    }
+    if(button==0) ctx.fillStyle = "black";
+    else if(button==2) ctx.fillStyle = "white";
+    
+    ctx.fillRect(x,y,blocksize,blocksize);
+}
+
+canvas.addEventListener("mousedown",mousedown);
+canvas.addEventListener("touchstart",mousedown);
+
+function mouseup(e){
+        e.preventDefault();//this is needed for touch to avoid ghost mouse events
+        drawing=false
+
+}
+
+canvas.addEventListener("mouseup",mouseup);
+canvas.addEventListener("touchend",mouseup);
+canvas.addEventListener("touchcancel",mouseup);
+
+function mousemove(e){
+    if(drawing){
+        var b = canvas.getBoundingClientRect();
+        var scale = canvas.width / parseFloat(b.width);
+        var x = Math.floor(((e.clientX - b.left) * scale)/blocksize)*blocksize;
+        var y = Math.floor(((e.clientY - b.top) * scale)/blocksize)*blocksize;
+        if(button==-1){
+            x = Math.floor(((e.touches[0].clientX - b.left) * scale)/blocksize)*blocksize;
+            y = Math.floor(((e.touches[0].clientY - b.top) * scale)/blocksize)*blocksize;
+            if(black) ctx.fillStyle = "black"; 
+            else ctx.fillStyle = "white"; 
+        }
+        else if(button==0) ctx.fillStyle = "black";
+        else if(button==2) ctx.fillStyle = "white";
+        
+        ctx.fillRect(x,y,blocksize,blocksize);
+    }
+}
+
+canvas.addEventListener("mousemove",mousemove);
+canvas.addEventListener("touchmove",mousemove);
+
+let parts=[
+    [//O
+        [1,0,0,0,0],
+        [1,0,0,0,0],
+        [1,0,0,0,0],
+        [1,0,0,0,0],
+        [1,0,0,0,0]
+    ],
+    [//P
+        [1,1,1,0,0],
+        [1,1,1,0,0],
+        [1,0,0,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0]
+    ],
+    [//Q
+        [1,1,0,0,0],
+        [0,1,0,0,0],
+        [0,1,0,0,0],
+        [0,1,0,0,0],
+        [0,0,0,0,0]
+    ],
+    [//R
+        [0,1,1,0,0],
+        [1,1,0,0,0],
+        [0,1,0,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0]  
+    ],
+    [//S
+        [0,0,1,1,0],
+        [1,1,1,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0]
+    ],
+    [//T
+        [1,1,1,0,0],
+        [0,1,0,0,0],
+        [0,1,0,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0]
+    ],
+    [//U
+        [1,0,1,0,0],
+        [1,1,1,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0]
+    ],
+    [//V
+        [1,0,0,0,0],
+        [1,0,0,0,0],
+        [1,1,1,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0]
+    ],
+    [//W
+        [1,0,0,0,0],
+        [1,1,0,0,0],
+        [0,1,1,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0]
+    ],
+    [//X
+        [0,1,0,0,0],
+        [1,1,1,0,0],
+        [0,1,0,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0]
+    ],
+    [//Y
+        [1,0,0,0,0],
+        [1,1,0,0,0],
+        [1,0,0,0,0],
+        [1,0,0,0,0],
+        [0,0,0,0,0]
+    ],
+    [//Z
+        [1,1,0,0,0],
+        [0,1,0,0,0],
+        [0,1,1,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0]
+    ]/*,
+    [//test
+        [0,0,0,0,0],
+        [0,0,1,1,0],
+        [0,0,1,1,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0]
+    ],
+    [//test mirror
+        [0,0,0,0,0],
+        [0,1,1,0,0],
+        [0,1,1,0,0],
+        [0,0,0,0,0],
+        [0,0,0,0,0]
+    ]*/
+];
+//error currently in 6x10 does do 246175330 iterations and finds nothing takes forever
+
+let parts2=[
+    [//O
+        [1,0],
+        [1,0]
+    ],
+    [//O
+        [1,0],
+        [0,0]
+    ]
+];
+ 
+class PentominoSolver {
+    constructor(parts) {
+        this.parts=parts;
+        this.xmin=new Array(this.parts.length).fill(0);
+        this.xmax=new Array(this.parts.length).fill(0);
+        this.ymin=new Array(this.parts.length).fill(0);
+        this.ymax=new Array(this.parts.length).fill(0);
+        this.setOffsetsSizes();
         this.dl = new DancingLinks();
         this.generateItems();
         this.generateOptions();
         this.inputField(field);
     }
-    generateItems() {
-        for (let y = 1; y <= 9; ++y) {
-            for (let x = 1; x <= 9; x++) {
-                this.dl.pushItem("f" + x + "_" + y);
-            }
+    rotateBounds(rot,n){
+        let siz=this.parts[0].length-1;
+        switch(rot){
+            //original
+            case 0: return [this.xmin[n],this.xmax[n],this.ymin[n],this.ymax[n]];
+            //rotated mathematically left once
+            //              2               3         siz-    1        siz-      0
+            case 1: return [this.ymin[n],this.ymax[n],siz-this.xmax[n],siz-this.xmin[n]];
+            //rotated mathematically left twice
+            case 2: return [siz-this.xmax[n],siz-this.xmin[n],siz-this.ymax[n],siz-this.ymin[n]];
+            //rotated mathematically left three times
+            case 3: return [siz-this.ymax[n],siz-this.ymin[n],this.xmin[n],this.xmax[n]];
+            //now mirrored horizontally
+            case 4: return [siz-this.xmax[n],siz-this.xmin[n],this.ymin[n],this.ymax[n]];
+            //now mirrored horizontally and rotated mathematically left once
+            case 5: return [this.ymin[n],this.ymax[n],this.xmin[n],this.xmax[n]];
+            //now mirrored horizontally and rotated mathematically left twice
+            case 6: return [this.xmin[n],this.xmax[n],siz-this.ymax[n],siz-this.ymin[n]];
+            //now mirrored horizontally and rotated mathematically left three times
+            case 7: return [siz-this.ymax[n],siz-this.ymin[n],siz-this.xmax[n],siz-this.xmin[n]];
         }
-        for (let x = 1; x <= 9; ++x) {
-            for (let n = 1; n <= 9; n++) {
-                this.dl.pushItem("c" + x + "#" + n);
-            }
-        }
-        for (let y = 1; y <= 9; y++) {
-            for (let n = 1; n <= 9; n++) {
-                this.dl.pushItem("r" + y + "#" + n);
-            }
-        }
-        for (let i = 1; i <= 9; i++) {
-            for (let n = 1; n <= 9; n++) {
-                this.dl.pushItem("b" + i + "#" + n);
-            }
+
+    }
+    getUnshiftedParts(n,rot,x,y){
+        let siz=this.parts[0].length-1;
+        switch(rot){ 
+            //original
+            case 0: return this.parts[n][y][x];
+            //rotated mathematically left once
+            case 1: return this.parts[n][x][siz-y];
+            //rotated mathematically left twice
+            case 2: return this.parts[n][siz-y][siz-x];
+            //rotated mathematically left three times
+            case 3: return this.parts[n][siz-x][y];
+            //now mirrored horizontally
+            case 4: return this.parts[n][y][siz-x];
+            //now mirrored horizontally and rotated mathematically left once
+            case 5: return this.parts[n][x][y];
+            //now mirrored horizontally and rotated mathematically left twice
+            case 6: return this.parts[n][siz-y][x];
+            //now mirrored horizontally and rotated mathematically left three times
+            case 7: return this.parts[n][siz-x][siz-y];
         }
     }
-    optionEntry(x, y, n) {
-        return ["f" + x + "_" + y, "c" + x + "#" + n, "r" + y + "#" + n, "b" + (Math.floor((y - 1) / 3) * 3 + Math.floor((x - 1) / 3) + 1) + "#" + n]
+    getParts(n,rot,x,y){
+        let [x1,x2,y1,y2]=this.rotateBounds(rot,n);
+        return this.getUnshiftedParts(n,rot,x+x1,y+y1);
+    }
+    getMax(n,rot){
+        let [x1,x2,y1,y2]=this.rotateBounds(rot,n);
+        return [x2-x1+1,y2-y1+1];
+    }
+    print(n,rot){
+        let [xmax,ymax]=this.getMax(n,rot);
+        for(let y=0;y<ymax;y++){
+            let s="";
+            for(let x=0;x<xmax;x++){
+                s+=this.getParts(n,rot,x,y)?"#":" ";
+            }
+            console.log(s);
+        }
+    }
+    getBounds(part){
+      let x1=Number.MAX_SAFE_INTEGER,x2=0,y1=Number.MAX_SAFE_INTEGER,y2=0;
+        for(let y=0;y<part.length;y++){
+            for(let x=0;x<part[y].length;x++){
+                if(part[y][x]==1){
+                    if(x<x1) x1=x;
+                    if(x>x2) x2=x;
+                    if(y<y1) y1=y;
+                    if(y>y2) y2=y;
+                }
+            }
+        }
+        return [x1,x2,y1,y2];
+    }
+
+    setOffsetsSizes(){
+        for(let n=0;n<this.parts.length;n++)
+            [this.xmin[n],this.xmax[n],this.ymin[n],this.ymax[n]]=this.getBounds(this.parts[n]);
+    }
+    optionEntry(x0, y0,rot,n) {
+        let opt = [];
+        opt.push(this.numToCode(n));
+        let [xmax,ymax]=this.getMax(n,rot);
+        if(x0+xmax>num || y0+ymax>num) return null;
+        for(let y=0;y<ymax;y++){
+            let s="";
+            for(let x=0;x<xmax;x++){
+                if(this.getParts(n,rot,x,y)==1) opt.push(String(x+x0).padStart(2, '0') + "_" + String(y+y0).padStart(2, '0'));
+            }
+        }
+        return opt;
+    }
+    numToCode(n) {
+        return String.fromCharCode("O".charCodeAt(0)+n)
+    }
+    codeToNum(c) {
+        return c.charCodeAt(0)-"O".charCodeAt(0);
+    }
+    generateItems() {
+        for (let n = 0; n < this.parts.length; ++n) {//Attention secondary items need to be added at the end also does not work with P only O
+            this.dl.pushItem(this.numToCode(n),false);//false makes trouble but true also
+        }
+        for (let y = 0; y < num; ++y) {
+            for (let x = 0; x < num; ++x) {
+                this.dl.pushItem(String(x).padStart(2, '0') + "_" + String(y).padStart(2, '0'));//primary items
+            }
+        }
+     
     }
     generateOptions() {
-        for (let x = 1; x <= 9; x++) {
-            for (let y = 1; y <= 9; y++) {
-                for (let n = 1; n <= 9; n++) {
-                    this.dl.setOption(this.optionEntry(x, y, n));
+        for (let n = 0; n < this.parts.length; n++) {
+            for (let x0 = 0; x0 < num; x0++) {
+                for (let y0 = 0; y0 < num; y0++) {
+                    for(let rot=0;rot<8;rot++){
+                        //console.log(this.optionEntry(x0, y0,rot,n))
+                        let entry=this.optionEntry(x0, y0,rot,n);
+                        if(entry!==null) this.dl.setOption(entry);
+                    }
                 }
             }
         }
     }
     inputField(field) {
         let opt = [];
-        for (let x = 0; x < 9; x++) {
-            for (let y = 0; y < 9; y++) {
-                if (field[y][x] !== undefined) {
-                    opt.push(...this.optionEntry(x + 1, y + 1, field[y][x]));
+        let siz=this.parts[0].length;
+        for (let x = 0; x < num; x++) {
+            for (let y = 0; y < num; y++) {
+                if (field[y][x] == 1) {
+                    opt.push(String(x).padStart(2, '0') + "_" + String(y).padStart(2, '0'));
                 }
             }
         }
+        console.log("Forced Opt:"+opt)
         this.dl.setOption(opt, true);
     }
     solve() {
         return this.dl.solve();
     }
 }
-var ss;
+let ss;
 let cnt = 0;
+let sol;
 function solve() {
-    ss = new SudokuSolver();
-    let sol = ss.solve();
+    populateField();
+    ss = new PentominoSolver(parts);
+    sol = ss.solve();
     console.log("solutions: " + sol.length)
     document.getElementById("info").innerHTML = "Solutions: " + sol.length;
     let solnr = cnt % sol.length;
     cnt++;
-    for (i = 1; i < sol[solnr].length; i++) {
-         document.getElementById(sol[solnr][i][1] + "_" + sol[solnr][i][3]).value = sol[solnr][i][7];
-    }
+   // for (i = 1; i < sol[solnr].length; i++) {
+        document.getElementById("info").innerHTML=JSON.stringify(sol[solnr]);
+
+         //document.getElementById(sol[solnr][i][1] + "_" + sol[solnr][i][3]).value = sol[solnr][i][7];
+    //}
 }
 
-
+/*
 let dl = new DancingLinks();
 function test(){
     while(true){
@@ -527,7 +779,6 @@ function test(){
     }
 }
 
-/*
 dl.pushItem("e");
 dl.pushItem("a");
 dl.pushItem("b");
@@ -550,7 +801,7 @@ dl.setOption(["h"]);
 dl.setOption(["h","e"]);
 */
 
-
+/*
 dl.pushItem("a");
 dl.pushItem("b");
 dl.pushItem("c");
@@ -567,3 +818,4 @@ dl.setOption(["b","g"]);
 dl.setOption(["d","e","g"]);
 dl.setOption(["e"]);
 dl.setOption(["f"]);
+*/

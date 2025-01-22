@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIcalc</title>
+    <title>Pentomino</title>
     <link rel="stylesheet" href="style.css">
     
    
 	<link rel="manifest" href="./manifest.json" />
-	<meta name="description" content="Sudoku" />
+	<meta name="description" content="Pentomino" />
 	<meta name="theme-color" content="#2F3BA2" />
 
 	<meta name="apple-mobile-web-app-capable" content="yes" />
@@ -40,14 +40,8 @@
 		}
 	</script>
 <!-- erst an hier ändern-->
-    <H5 id="korrekt">
-		Hello my friend you can install the app in the top right corner. Press Start to generate a sudoku puzzle. Press solve to calculate a solution using Knuth's Algorithm X.
-		Sometimes there are more than one solutions then press solve multiple times to see them all.
-	</H5>
-	<button id="start">Start</button><button id="solve">Solve</button><button id="update">Update</button><br/>	
-	<table id="sudoku">
-	
-	</table>
+	<button id="start">Start</button><button id="solve">Solve</button><button id="update">Update</button><button id="black">Black</button><button id="white">White</button><br/>	
+	<canvas id="canvas"  width='512' height='512'></canvas>
 	<p id="info"></p>
 <!-- nur bis hier ändern-->
     
