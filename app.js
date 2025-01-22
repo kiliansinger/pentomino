@@ -97,6 +97,8 @@ class DancingLinks {
         this.items[r].llink = l;
     }
     _reorderItemsAfterDec(i) {//for sudoku this gives typically a factor of 2 speedup
+        // but also slows e.g. pentomino down by factor of 2 due to the sorting
+        return;
         if(this.items[i].llink===0) return;
         let j=this.items[i].llink;
         if(this.options[i].top>=this.options[j].top) return;
@@ -110,7 +112,9 @@ class DancingLinks {
         }
           // for(let j=this.items[0].rlink;this.items[j].rlink!==0;j=this.items[j].rlink) if(this.items[j].top>this.items[this.items[j].rlink].top) console.error("!!!"+j); 
     }
-    _reorderItemsAfterInc(i) {//for sudoku this gives typically a factor of 2 speedup
+    _reorderItemsAfterInc(i) {//for sudoku this gives typically a factor of 2 less steps
+    // but also slows e.g. pentomino down by factor of 2 due to the sorting
+          return;
           if(this.items[i].llink===0) return;
           let j=this.items[i].rlink;
           if(this.options[i].top<=this.options[j].top) return;
@@ -407,6 +411,8 @@ document.getElementById("white").onclick = function(){black=false};
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle = "white";
     ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,canvas.width*0.5,canvas.height*0.8);
 })();
 let num=10;
 let blocksize=Math.floor(canvas.width/num);
@@ -758,7 +764,10 @@ let sol;
 function solve() {
     populateField();
     ss = new PentominoSolver(parts);
+    const start = performance.now();
     sol = ss.solve();
+    const end = performance.now();
+    console.log(`Execution time: ${end - start} ms`);
     console.log("solutions: " + sol.length)
     document.getElementById("info").innerHTML = "Solutions: " + sol.length;
     let solnr = cnt % sol.length;
